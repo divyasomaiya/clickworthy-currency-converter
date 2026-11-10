@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clickworthy Currency Converter | By DTC</title>
+  <meta name="description" content="A clean, lightweight, production-ready multi-currency converter branded Clickworthy by DTC. Powered by the open Frankfurter reference rate API.">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>💱</text></svg>">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-badge">
+        <span class="brand-dot"></span>
+        <span class="brand-subtitle">Official Utility</span>
+      </div>
+      <h1 class="brand-title">Clickworthy <span class="brand-by">by DTC</span></h1>
+      <p class="brand-tagline">Fast, minimal &amp; reliable international currency conversion</p>
+    </header>
+
+    <!-- Main Converter Card -->
+    <main class="converter-card" role="region" aria-label="Currency Converter">
+      <!-- Status & Notification Banner -->
+      <div id="statusBanner" class="status-banner" role="status" aria-live="polite" hidden>
+        <span class="status-icon" id="statusIcon" aria-hidden="true">ℹ️</span>
+        <span class="status-message" id="statusMessage"></span>
+        <button type="button" class="status-dismiss" id="statusDismiss" aria-label="Dismiss message">&times;</button>
+      </div>
+
+      <!-- Conversion Container -->
+      <div class="converter-grid">
+        <!-- From (Base) Input Block -->
+        <div class="currency-block" id="fromCurrencyBlock">
+          <div class="block-header">
+            <label for="fromAmountInput" class="block-label">You send</label>
+            <span class="currency-tag" id="fromCurrencyTag" aria-hidden="true">USD</span>
+          </div>
+          <div class="input-row">
+            <div class="amount-field-wrapper">
+              <input
+                type="text"
+                inputmode="decimal"
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                id="fromAmountInput"
+                class="amount-input"
+                placeholder="0.00"
+                value="1"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Amount to convert from"
+              >
+            </div>
+            <button
+              type="button"
+              class="currency-select-trigger"
+              id="fromCurrencyBtn"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-controls="currencyModal"
+              aria-label="Select source currency. Currently USD - United States Dollar"
+            >
+              <div class="currency-flag-code">
+                <span class="currency-code" id="fromCodeLabel">USD</span>
+              </div>
+              <span class="dropdown-chevron" aria-hidden="true">▼</span>
+            </button>
+          </div>
+          <div class="currency-name-caption" id="fromNameLabel">United States Dollar</div>
+        </div>
+
+        <!-- Swap Action Button -->
+        <div class="swap-action-container">
+          <button
+            type="button"
+            class="swap-button"
+            id="swapButton"
+            title="Swap source and target currencies"
+            aria-label="Swap currencies"
+          >
+            <svg class="swap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- To (Quote) Input Block -->
+        <div class="currency-block" id="toCurrencyBlock">
+          <div class="block-header">
+            <label for="toAmountInput" class="block-label">Recipient gets</label>
+            <span class="currency-tag" id="toCurrencyTag" aria-hidden="true">INR</span>
+          </div>
+          <div class="input-row">
+            <div class="amount-field-wrapper">
+              <input
+                type="text"
+                inputmode="decimal"
+                pattern="^[0-9]*[.,]?[0-9]*$"
+                id="toAmountInput"
+                class="amount-input"
+                placeholder="0.00"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Converted amount"
+              >
+            </div>
+            <button
+              type="button"
+              class="currency-select-trigger"
+              id="toCurrencyBtn"
+              aria-haspopup="dialog"
+              aria-expanded="false"
+              aria-controls="currencyModal"
+              aria-label="Select target currency. Currently INR - Indian Rupee"
+            >
+              <div class="currency-flag-code">
+                <span class="currency-code" id="toCodeLabel">INR</span>
+              </div>
+              <span class="dropdown-chevron" aria-hidden="true">▼</span>
+            </button>
+          </div>
+          <div class="currency-name-caption" id="toNameLabel">Indian Rupee</div>
+        </div>
+      </div>
+
+      <!-- Rate & Meta Section -->
+      <section class="rate-details" aria-label="Exchange Rate Information">
+        <div class="rate-primary-row">
+          <div class="rate-headline" id="exchangeRateHeadline" aria-live="polite">
+            <span class="rate-spinner" id="rateSpinner" aria-hidden="true"></span>
+            <span id="rateSummaryText">Loading exchange rate...</span>
+          </div>
+          <div class="rate-badge-group">
+            <span class="rate-source-badge" id="rateSourceBadge" title="Rate source">Latest Reference Rate</span>
+          </div>
+        </div>
+
+        <div class="rate-secondary-row">
+          <div class="inverse-rate" id="inverseRateText">1 INR = 0.0000 USD</div>
+          <div class="rate-date-indicator" id="rateDateText">Latest available official reference rate</div>
+        </div>
+      </section>
+
+      <!-- Quick Amount Presets -->
+      <div class="quick-presets" aria-label="Quick amount presets">
+        <span class="presets-label">Popular amounts:</span>
+        <button type="button" class="preset-btn" data-preset="10">10</button>
+        <button type="button" class="preset-btn" data-preset="100">100</button>
+        <button type="button" class="preset-btn" data-preset="1000">1,000</button>
+        <button type="button" class="preset-btn" data-preset="5000">5,000</button>
+      </div>
+    </main>
+
+    <!-- Currency Selection Modal / Dialog -->
+    <div
+      class="currency-modal-backdrop"
+      id="currencyModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+      hidden
+    >
+      <div class="currency-modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modalTitle">Select Currency</h2>
+          <button type="button" class="modal-close-btn" id="modalCloseBtn" aria-label="Close currency selector">&times;</button>
+        </div>
+
+        <div class="modal-search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="search"
+            id="currencySearchInput"
+            class="currency-search-input"
+            placeholder="Search code or currency name (e.g. USD, Euro, Yen)..."
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search currencies"
+          >
+          <button type="button" class="search-clear-btn" id="searchClearBtn" aria-label="Clear search" hidden>&times;</button>
+        </div>
+
+        <div class="currency-list-container" id="currencyListContainer" role="listbox" tabindex="0" aria-label="Currencies list">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="modal-footer">
+          <span id="currencyCountText" class="currency-count-text">Loading currencies...</span>
+          <button type="button" class="modal-secondary-close" id="modalCancelBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <p><strong>Reference Rates Notice:</strong> Exchange rates displayed are daily official mid-market reference rates provided by the free <a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer">Frankfurter API</a> (blended from central banks and official sources). These are for informational purposes and do not represent guaranteed real-time market execution or trading prices.</p>
+      </div>
+      <div class="footer-meta">
+        <span class="footer-brand">Clickworthy by DTC</span>
+        <span class="footer-divider">&bull;</span>
+        <span>Static Web Application (Cloudflare &amp; GitHub Pages Ready)</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Fallback currencies data in case network fails on initial load -->
+  <script src="js/currencies-fallback.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
